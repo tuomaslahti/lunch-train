@@ -1,18 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { LunchTrain, CreateLunchTrainInput } from '@/types/lunch-train';
 import { getUserInfo, saveNickname } from '@/lib/user-id';
 import Header from '@/components/Header';
-import { getInitials } from '@/lib/utils';
+import CreateTrainForm from '@/components/CreateTrainForm';
+import TrainCard from '@/components/TrainCard';
 import { getTrains, createTrain, joinTrain, leaveTrain } from '@/lib/api';
-import {
-  ClockIcon,
-  MapPinIcon,
-  UserIcon,
-  PlusCircleIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/outline';
+import { PlusCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
   const [trains, setTrains] = useState<LunchTrain[]>([]);
@@ -25,7 +20,6 @@ export default function Home() {
   const [savedNickname, setSavedNickname] = useState<string | null>(null);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [editingNickname, setEditingNickname] = useState('');
-  const departurePlaceInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const { userId, nickname } = getUserInfo();
@@ -37,12 +31,6 @@ export default function Home() {
       setEditingNickname(nickname);
     }
   }, []);
-
-  useEffect(() => {
-    if (isCreating && departurePlaceInputRef.current) {
-      departurePlaceInputRef.current.focus();
-    }
-  }, [isCreating]);
 
   const getDefaultTime = () => {
     const date = new Date();
@@ -258,24 +246,9 @@ export default function Home() {
     return train.participants.some(p => p.userId === userId);
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const [hours, minutes] = e.target.value.split(':');
-    const newDate = new Date();
-    newDate.setHours(parseInt(hours, 10));
-    newDate.setMinutes(parseInt(minutes, 10));
-    newDate.setSeconds(0);
-    setNewTrain({ ...newTrain, departureTime: newDate });
-  };
-
-  const formatTimeForInput = (date: Date) => {
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-  };
-
-  const isDepartingSoon = (departureTime: Date) => {
-    const now = new Date();
-    const fifteenMinutes = 15 * 60 * 1000; // 15 minutes in milliseconds
-    return new Date(departureTime).getTime() - now.getTime() <= fifteenMinutes;
-  };
+  const activeTrains = trains
+    .filter(train => new Date(train.departureTime) > new Date())
+    .sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime());
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -309,85 +282,12 @@ export default function Home() {
       )}
 
       {isCreating && (
-        <form onSubmit={handleCreateTrain} className="mb-8 p-4 rounded bg-gray-800 shadow-lg">
-          <h2 className="text-3xl font-semibold mb-4 text-white text-center">Create New Lunch Train</h2>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block mb-1 text-white flex items-center gap-1">
-                  <MapPinIcon className="w-4 h-4" />
-                  From
-                </label>
-                <input
-                  ref={departurePlaceInputRef}
-                  type="text"
-                  value={newTrain.departurePlace}
-                  onChange={(e) => setNewTrain({ ...newTrain, departurePlace: e.target.value })}
-                  className="w-full p-3 rounded bg-gray-700 text-white text-lg"
-                  placeholder="e.g., Main lobby, Coffee corner, etc."
-                  required
-                />
-              </div>
-              <div>
-                <label className="block mb-1 text-white flex items-center gap-1">
-                  <MapPinIcon className="w-4 h-4" />
-                  To
-                </label>
-                <input
-                  type="text"
-                  value={newTrain.destination}
-                  onChange={(e) => setNewTrain({ ...newTrain, destination: e.target.value })}
-                  className="w-full p-3 rounded bg-gray-700 text-white text-lg"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block mb-1 text-white flex items-center gap-1">
-                <ClockIcon className="w-4 h-4" />
-                Departure Time
-              </label>
-              <input
-                type="time"
-                value={formatTimeForInput(newTrain.departureTime)}
-                onChange={handleTimeChange}
-                className="w-full p-3 rounded bg-gray-700 text-white text-lg"
-                step="300"
-                required
-                lang="fi"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 text-white flex items-center gap-1">
-                <UserIcon className="w-4 h-4" />
-                Your Nickname
-              </label>
-              <input
-                type="text"
-                value={newTrain.nickname}
-                onChange={(e) => setNewTrain(prev => ({ ...prev, nickname: e.target.value }))}
-                className="w-full p-3 rounded bg-gray-700 text-white text-lg"
-                placeholder="Enter your nickname"
-                required
-              />
-            </div>
-            <div className="flex gap-2 justify-center">
-              <button
-                type="submit"
-                className="bg-green-500 text-white px-4 py-3 rounded hover:bg-green-600 text-lg"
-              >
-                Create
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreating(false)}
-                className="bg-gray-500 text-white px-4 py-3 rounded hover:bg-gray-600 text-lg"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </form>
+        <CreateTrainForm
+          onSubmit={handleCreateTrain}
+          onCancel={() => setIsCreating(false)}
+          newTrain={newTrain}
+          setNewTrain={setNewTrain}
+        />
       )}
 
       <h2 className="text-2xl font-semibold mb-4">Next departures</h2>
@@ -396,99 +296,25 @@ export default function Home() {
           <div className="flex justify-center py-8">
             <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin" />
           </div>
-        ) : trains
-          .filter(train => new Date(train.departureTime) > new Date())
-          .sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime())
-          .length === 0 ? (
+        ) : activeTrains.length === 0 ? (
           <div className="text-gray-400 text-center py-8">
             No upcoming departures
           </div>
         ) : (
-          trains
-            .filter(train => new Date(train.departureTime) > new Date())
-            .sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime())
-            .map((train) => (
-              <div
-                key={train.id}
-                className={`rounded p-4 bg-gray-800 ${isDepartingSoon(new Date(train.departureTime))
-                  ? 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                  : 'shadow-lg'
-                  }`}
-              >
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                      <h3 className="text-2xl font-semibold text-white leading-none flex items-center gap-2">
-                        <MapPinIcon className="w-5 h-5" />
-                        {train.departurePlace} → {train.destination}
-                      </h3>
-                      <span className="text-gray-300 text-base flex items-center gap-1">
-                        <ClockIcon className="w-5 h-5" />
-                        {new Date(train.departureTime).toLocaleTimeString('fi-FI', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                    {isParticipant(train) ? (
-                      <button
-                        onClick={() => handleLeaveTrain(train.id)}
-                        className="w-full sm:w-auto bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-base"
-                      >
-                        Leave Train
-                      </button>
-                    ) : (
-                      <div>
-                        {joiningTrainId === train.id && !savedNickname ? (
-                          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                            <input
-                              type="text"
-                              value={joinNickname}
-                              onChange={(e) => setJoinNickname(e.target.value)}
-                              className="p-2 rounded bg-gray-700 text-white text-base"
-                              placeholder="Enter your nickname"
-                              required
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleJoinTrain(train.id)}
-                                className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base"
-                              >
-                                Join
-                              </button>
-                              <button
-                                onClick={() => setJoiningTrainId(null)}
-                                className="flex-1 sm:flex-none bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 text-base"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => savedNickname ? handleJoinTrain(train.id) : setJoiningTrainId(train.id)}
-                            className="w-full sm:w-auto bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base"
-                          >
-                            Join Train
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {train.participants.map((participant) => (
-                      <div
-                        key={participant.userId}
-                        className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium"
-                        title={participant.nickname}
-                      >
-                        {getInitials(participant.nickname)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))
+          activeTrains.map((train) => (
+            <TrainCard
+              key={train.id}
+              train={train}
+              isParticipant={isParticipant(train)}
+              onJoin={() => handleJoinTrain(train.id)}
+              onLeave={() => handleLeaveTrain(train.id)}
+              joiningTrainId={joiningTrainId}
+              savedNickname={savedNickname}
+              joinNickname={joinNickname}
+              setJoinNickname={setJoinNickname}
+              setJoiningTrainId={setJoiningTrainId}
+            />
+          ))
         )}
       </div>
     </main>

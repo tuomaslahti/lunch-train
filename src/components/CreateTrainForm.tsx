@@ -1,0 +1,115 @@
+import { useRef, useEffect } from 'react';
+import { CreateLunchTrainInput } from '@/types/lunch-train';
+import { MapPinIcon, ClockIcon, UserIcon } from '@heroicons/react/24/outline';
+
+interface CreateTrainFormProps {
+    onSubmit: (e: React.FormEvent) => Promise<void>;
+    onCancel: () => void;
+    newTrain: CreateLunchTrainInput;
+    setNewTrain: (train: CreateLunchTrainInput) => void;
+}
+
+export default function CreateTrainForm({ onSubmit, onCancel, newTrain, setNewTrain }: CreateTrainFormProps) {
+    const departurePlaceInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (departurePlaceInputRef.current) {
+            departurePlaceInputRef.current.focus();
+        }
+    }, []);
+
+    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const [hours, minutes] = e.target.value.split(':');
+        const newDate = new Date();
+        newDate.setHours(parseInt(hours, 10));
+        newDate.setMinutes(parseInt(minutes, 10));
+        newDate.setSeconds(0);
+        setNewTrain({ ...newTrain, departureTime: newDate });
+    };
+
+    const formatTimeForInput = (date: Date) => {
+        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <form onSubmit={onSubmit} className="mb-8 p-4 rounded bg-gray-800 shadow-lg">
+            <h2 className="text-3xl font-semibold mb-4 text-white text-center">Create New Lunch Train</h2>
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block mb-1 text-white flex items-center gap-1">
+                            <MapPinIcon className="w-4 h-4" />
+                            From
+                        </label>
+                        <input
+                            ref={departurePlaceInputRef}
+                            type="text"
+                            value={newTrain.departurePlace}
+                            onChange={(e) => setNewTrain({ ...newTrain, departurePlace: e.target.value })}
+                            className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                            placeholder="e.g., Main lobby, Coffee corner, etc."
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-1 text-white flex items-center gap-1">
+                            <MapPinIcon className="w-4 h-4" />
+                            To
+                        </label>
+                        <input
+                            type="text"
+                            value={newTrain.destination}
+                            onChange={(e) => setNewTrain({ ...newTrain, destination: e.target.value })}
+                            className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                            required
+                        />
+                    </div>
+                </div>
+                <div>
+                    <label className="block mb-1 text-white flex items-center gap-1">
+                        <ClockIcon className="w-4 h-4" />
+                        Departure Time
+                    </label>
+                    <input
+                        type="time"
+                        value={formatTimeForInput(newTrain.departureTime)}
+                        onChange={handleTimeChange}
+                        className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                        step="300"
+                        required
+                        lang="fi"
+                    />
+                </div>
+                <div>
+                    <label className="block mb-1 text-white flex items-center gap-1">
+                        <UserIcon className="w-4 h-4" />
+                        Your Nickname
+                    </label>
+                    <input
+                        type="text"
+                        value={newTrain.nickname}
+                        onChange={(e) => setNewTrain({ ...newTrain, nickname: e.target.value })}
+                        className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                        placeholder="Enter your nickname"
+                        required
+                    />
+                </div>
+                <div className="flex gap-2 justify-center">
+                    <button
+                        type="submit"
+                        className="bg-green-500 text-white px-4 py-3 rounded hover:bg-green-600 text-lg"
+                    >
+                        Create
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="bg-gray-500 text-white px-4 py-3 rounded hover:bg-gray-600 text-lg"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+    );
+} 
