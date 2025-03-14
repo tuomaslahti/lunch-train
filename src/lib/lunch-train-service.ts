@@ -10,7 +10,8 @@ import {
     arrayUnion,
     arrayRemove,
     Timestamp,
-    getDoc
+    getDoc,
+    deleteDoc
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { LunchTrain, CreateLunchTrainInput } from '@/types/lunch-train';
@@ -46,9 +47,15 @@ export const createLunchTrain = async (
 };
 
 export const getActiveLunchTrains = async (): Promise<LunchTrain[]> => {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
     const q = query(
         collection(db, COLLECTION_NAME),
         where('status', '==', 'active'),
+        where('departureTime', '>=', Timestamp.fromDate(startOfDay)),
+        where('departureTime', '<', Timestamp.fromDate(endOfDay)),
         orderBy('departureTime', 'asc')
     );
 
@@ -87,9 +94,14 @@ export const leaveLunchTrain = async (
     const participant = train.participants.find(p => p.userId === userId);
     if (!participant) return;
 
-    await updateDoc(trainRef, {
-        participants: arrayRemove(participant)
-    });
+    // If this is the last participant, delete the train
+    if (train.participants.length === 1) {
+        await deleteDoc(trainRef);
+    } else {
+        await updateDoc(trainRef, {
+            participants: arrayRemove(participant)
+        });
+    }
 };
 
 export const completeLunchTrain = async (trainId: string): Promise<void> => {
@@ -104,4 +116,12 @@ export const cancelLunchTrain = async (trainId: string): Promise<void> => {
     await updateDoc(trainRef, {
         status: 'cancelled'
     });
+};
+
+export const updateLunchTrain = async (
+    trainId: string,
+    updates: Partial<LunchTrain>
+): Promise<void> => {
+    const trainRef = doc(db, COLLECTION_NAME, trainId);
+    await updateDoc(trainRef, updates);
 }; 
