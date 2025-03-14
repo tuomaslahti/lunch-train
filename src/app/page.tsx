@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LunchTrain, CreateLunchTrainInput } from '@/types/lunch-train';
 import { getUserInfo, saveNickname } from '@/lib/user-id';
 import Header from '@/components/Header';
@@ -25,6 +25,7 @@ export default function Home() {
   const [savedNickname, setSavedNickname] = useState<string | null>(null);
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [editingNickname, setEditingNickname] = useState('');
+  const departurePlaceInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const { userId, nickname } = getUserInfo();
@@ -36,6 +37,12 @@ export default function Home() {
       setEditingNickname(nickname);
     }
   }, []);
+
+  useEffect(() => {
+    if (isCreating && departurePlaceInputRef.current) {
+      departurePlaceInputRef.current.focus();
+    }
+  }, [isCreating]);
 
   const getDefaultTime = () => {
     const date = new Date();
@@ -264,6 +271,12 @@ export default function Home() {
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
+  const isDepartingSoon = (departureTime: Date) => {
+    const now = new Date();
+    const fifteenMinutes = 15 * 60 * 1000; // 15 minutes in milliseconds
+    return new Date(departureTime).getTime() - now.getTime() <= fifteenMinutes;
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
       <Header
@@ -306,6 +319,7 @@ export default function Home() {
                   From
                 </label>
                 <input
+                  ref={departurePlaceInputRef}
                   type="text"
                   value={newTrain.departurePlace}
                   onChange={(e) => setNewTrain({ ...newTrain, departurePlace: e.target.value })}
@@ -394,7 +408,13 @@ export default function Home() {
             .filter(train => new Date(train.departureTime) > new Date())
             .sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime())
             .map((train) => (
-              <div key={train.id} className="rounded p-4 bg-gray-800 shadow-lg">
+              <div
+                key={train.id}
+                className={`rounded p-4 bg-gray-800 ${isDepartingSoon(new Date(train.departureTime))
+                  ? 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                  : 'shadow-lg'
+                  }`}
+              >
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex flex-col gap-1">
