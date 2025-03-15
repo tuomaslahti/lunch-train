@@ -56,7 +56,7 @@ export default function TrainCard({
                     {isParticipant ? (
                         <button
                             onClick={onLeave}
-                            className="w-full sm:w-auto bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-base"
+                            className="w-full sm:w-auto bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-base font-bold"
                         >
                             Leave Train
                         </button>
@@ -68,20 +68,20 @@ export default function TrainCard({
                                         type="text"
                                         value={joinNickname}
                                         onChange={(e) => setJoinNickname(e.target.value)}
-                                        className="p-2 rounded bg-gray-700 text-white text-base"
+                                        className="p-2 rounded bg-gray-700 text-white text-base font-bold"
                                         placeholder="Enter your nickname"
                                         required
                                     />
                                     <div className="flex gap-2">
                                         <button
                                             onClick={onJoin}
-                                            className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base"
+                                            className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base font-bold"
                                         >
                                             Join
                                         </button>
                                         <button
                                             onClick={() => setJoiningTrainId(null)}
-                                            className="flex-1 sm:flex-none bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 text-base"
+                                            className="flex-1 sm:flex-none bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 text-base font-bold"
                                         >
                                             Cancel
                                         </button>
@@ -90,7 +90,7 @@ export default function TrainCard({
                             ) : (
                                 <button
                                     onClick={onJoin}
-                                    className="w-full sm:w-auto bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base"
+                                    className="w-full sm:w-auto bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base font-bold"
                                 >
                                     Join Train
                                 </button>

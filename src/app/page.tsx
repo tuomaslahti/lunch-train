@@ -8,12 +8,12 @@ import CreateTrainForm from '@/components/CreateTrainForm';
 import TrainCard from '@/components/TrainCard';
 import { getTrains, createTrain, joinTrain, leaveTrain } from '@/lib/api';
 import { PlusCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import HeroSection from '@/components/HeroSection';
 
 export default function Home() {
   const [trains, setTrains] = useState<LunchTrain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
   const [joiningTrainId, setJoiningTrainId] = useState<string | null>(null);
   const [joinNickname, setJoinNickname] = useState('');
   const [userId, setUserId] = useState<string>('');
@@ -88,7 +88,6 @@ export default function Home() {
       saveNickname(newTrain.nickname);
       setSavedNickname(newTrain.nickname);
       setEditingNickname(newTrain.nickname);
-      setIsCreating(false);
       setNewTrain({
         destination: '',
         departurePlace: '',
@@ -251,71 +250,57 @@ export default function Home() {
     .sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime());
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <Header
-        savedNickname={savedNickname}
-        onNicknameUpdate={(nickname) => {
-          setSavedNickname(nickname);
-          setEditingNickname(nickname);
-          setNewTrain(prev => ({ ...prev, nickname }));
-          loadTrains();
-        }}
-        currentTrain={getCurrentTrain()}
-        userId={userId}
-        editingNickname={editingNickname}
-        setEditingNickname={setEditingNickname}
-      />
-      <h1 className="text-6xl font-bold mb-8 text-center">Lunch Train</h1>
-
-      {!isCreating && (
-        <div className="rounded p-4 bg-gray-800 shadow-lg mb-6">
-          <div className="flex justify-center">
-            <button
-              onClick={() => setIsCreating(true)}
-              className="bg-green-500 text-white px-4 py-3 rounded hover:bg-green-600 text-lg flex items-center gap-2"
-            >
-              <PlusCircleIcon className="w-5 h-5" />
-              Create New Lunch Train
-            </button>
-          </div>
-        </div>
-      )}
-
-      {isCreating && (
-        <CreateTrainForm
-          onSubmit={handleCreateTrain}
-          onCancel={() => setIsCreating(false)}
-          newTrain={newTrain}
-          setNewTrain={setNewTrain}
+    <main className="mb-32">
+      <div className="container mx-auto">
+        <Header
+          savedNickname={savedNickname}
+          onNicknameUpdate={(nickname) => {
+            setSavedNickname(nickname);
+            setEditingNickname(nickname);
+            setNewTrain(prev => ({ ...prev, nickname }));
+            loadTrains();
+          }}
+          currentTrain={getCurrentTrain()}
+          userId={userId}
+          editingNickname={editingNickname}
+          setEditingNickname={setEditingNickname}
         />
-      )}
+      </div>
 
-      <h2 className="text-2xl font-semibold mb-4">Next departures</h2>
-      <div className="grid gap-4">
-        {isLoading && isInitialLoad ? (
-          <div className="flex justify-center py-8">
-            <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin" />
-          </div>
-        ) : activeTrains.length === 0 ? (
-          <div className="text-gray-400 text-center py-8">
-            No upcoming departures
-          </div>
-        ) : (
-          activeTrains.map((train) => (
-            <TrainCard
-              key={train.id}
-              train={train}
-              isParticipant={isParticipant(train)}
-              onJoin={() => handleJoinTrain(train.id)}
-              onLeave={() => handleLeaveTrain(train.id)}
-              joiningTrainId={joiningTrainId}
-              savedNickname={savedNickname}
-              joinNickname={joinNickname}
-              setJoinNickname={setJoinNickname}
-              setJoiningTrainId={setJoiningTrainId}
-            />
-          ))
-        )}
+      <HeroSection
+        onSubmit={handleCreateTrain}
+        newTrain={newTrain}
+        setNewTrain={setNewTrain}
+      />
+
+      <div className="container mx-auto px-4 mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Next departures</h2>
+        <div className="grid gap-4">
+          {isLoading && isInitialLoad ? (
+            <div className="flex justify-center py-8">
+              <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin" />
+            </div>
+          ) : activeTrains.length === 0 ? (
+            <div className="text-gray-400 text-center py-8">
+              No upcoming departures
+            </div>
+          ) : (
+            activeTrains.map((train) => (
+              <TrainCard
+                key={train.id}
+                train={train}
+                isParticipant={isParticipant(train)}
+                onJoin={() => handleJoinTrain(train.id)}
+                onLeave={() => handleLeaveTrain(train.id)}
+                joiningTrainId={joiningTrainId}
+                savedNickname={savedNickname}
+                joinNickname={joinNickname}
+                setJoinNickname={setJoinNickname}
+                setJoiningTrainId={setJoiningTrainId}
+              />
+            ))
+          )}
+        </div>
       </div>
     </main>
   );

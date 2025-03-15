@@ -74,13 +74,13 @@ export default function Header({ savedNickname, onNicknameUpdate, currentTrain, 
                                                 type="text"
                                                 value={editingNickname}
                                                 onChange={(e) => setEditingNickname(e.target.value)}
-                                                className="w-full p-2 rounded bg-gray-700 text-white text-lg"
+                                                className="w-full p-2 rounded bg-gray-700 text-white text-lg font-bold"
                                                 autoFocus
                                             />
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={handleUpdateNickname}
-                                                    className="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600"
+                                                    className="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-bold"
                                                 >
                                                     Save
                                                 </button>
@@ -89,7 +89,7 @@ export default function Header({ savedNickname, onNicknameUpdate, currentTrain, 
                                                         setIsEditingNickname(false);
                                                         setEditingNickname(savedNickname);
                                                     }}
-                                                    className="flex-1 bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600"
+                                                    className="flex-1 bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 font-bold"
                                                 >
                                                     Cancel
                                                 </button>
@@ -98,7 +98,7 @@ export default function Header({ savedNickname, onNicknameUpdate, currentTrain, 
                                     ) : (
                                         <button
                                             onClick={() => setIsEditingNickname(true)}
-                                            className="w-full bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-600"
+                                            className="w-full bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-600 font-bold"
                                         >
                                             Edit Nickname
                                         </button>

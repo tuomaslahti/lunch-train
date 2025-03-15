@@ -4,12 +4,11 @@ import { MapPinIcon, ClockIcon, UserIcon } from '@heroicons/react/24/outline';
 
 interface CreateTrainFormProps {
     onSubmit: (e: React.FormEvent) => Promise<void>;
-    onCancel: () => void;
     newTrain: CreateLunchTrainInput;
     setNewTrain: (train: CreateLunchTrainInput) => void;
 }
 
-export default function CreateTrainForm({ onSubmit, onCancel, newTrain, setNewTrain }: CreateTrainFormProps) {
+export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: CreateTrainFormProps) {
     const departurePlaceInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -46,7 +45,7 @@ export default function CreateTrainForm({ onSubmit, onCancel, newTrain, setNewTr
                             type="text"
                             value={newTrain.departurePlace}
                             onChange={(e) => setNewTrain({ ...newTrain, departurePlace: e.target.value })}
-                            className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                            className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
                             placeholder="e.g., Main lobby, Coffee corner, etc."
                             required
                         />
@@ -60,7 +59,7 @@ export default function CreateTrainForm({ onSubmit, onCancel, newTrain, setNewTr
                             type="text"
                             value={newTrain.destination}
                             onChange={(e) => setNewTrain({ ...newTrain, destination: e.target.value })}
-                            className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                            className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
                             required
                         />
                     </div>
@@ -74,7 +73,7 @@ export default function CreateTrainForm({ onSubmit, onCancel, newTrain, setNewTr
                         type="time"
                         value={formatTimeForInput(newTrain.departureTime)}
                         onChange={handleTimeChange}
-                        className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                        className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
                         step="300"
                         required
                         lang="fi"
@@ -89,26 +88,20 @@ export default function CreateTrainForm({ onSubmit, onCancel, newTrain, setNewTr
                         type="text"
                         value={newTrain.nickname}
                         onChange={(e) => setNewTrain({ ...newTrain, nickname: e.target.value })}
-                        className="w-full p-3 rounded bg-gray-700 text-white text-lg"
+                        className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
                         placeholder="Enter your nickname"
                         required
                     />
                 </div>
-                <div className="flex gap-2 justify-center">
-                    <button
-                        type="submit"
-                        className="bg-green-500 text-white px-4 py-3 rounded hover:bg-green-600 text-lg"
-                    >
-                        Create
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="bg-gray-500 text-white px-4 py-3 rounded hover:bg-gray-600 text-lg"
-                    >
-                        Cancel
-                    </button>
-                </div>
+            </div>
+
+            <div className="relative -mb-11 flex justify-center mt-8">
+                <button
+                    type="submit"
+                    className="bg-green-500 text-white px-12 py-3 rounded hover:bg-green-600 text-lg font-bold"
+                >
+                    Create
+                </button>
             </div>
         </form>
     );
