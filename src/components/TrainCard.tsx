@@ -58,7 +58,7 @@ export default function TrainCard({
                             onClick={onLeave}
                             className="w-full sm:w-auto bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-base font-bold"
                         >
-                            Leave Train
+                            Poistu junasta
                         </button>
                     ) : (
                         <div>
@@ -69,7 +69,7 @@ export default function TrainCard({
                                         value={joinNickname}
                                         onChange={(e) => setJoinNickname(e.target.value)}
                                         className="p-2 rounded bg-gray-700 text-white text-base font-bold"
-                                        placeholder="Enter your nickname"
+                                        placeholder="Kirjoita nimimerkkisi"
                                         required
                                     />
                                     <div className="flex gap-2">
@@ -77,13 +77,13 @@ export default function TrainCard({
                                             onClick={onJoin}
                                             className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base font-bold"
                                         >
-                                            Join
+                                            Liity
                                         </button>
                                         <button
                                             onClick={() => setJoiningTrainId(null)}
                                             className="flex-1 sm:flex-none bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 text-base font-bold"
                                         >
-                                            Cancel
+                                            Peruuta
                                         </button>
                                     </div>
                                 </div>
@@ -92,7 +92,7 @@ export default function TrainCard({
                                     onClick={onJoin}
                                     className="w-full sm:w-auto bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base font-bold"
                                 >
-                                    Join Train
+                                    Liity junaan
                                 </button>
                             )}
                         </div>

@@ -49,65 +49,63 @@ export default function Header({ savedNickname, onNicknameUpdate, currentTrain, 
     };
 
     return (
-        <header className="mb-8">
-            <div className="container mx-auto px-4 h-16 flex items-center justify-end">
-                <div className="flex items-center gap-4">
-                    {savedNickname && (
-                        <div className="relative" ref={dropdownRef}>
-                            <button
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium hover:bg-blue-600 transition-colors"
-                            >
-                                {getInitials(savedNickname)}
-                            </button>
-                            {isDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg p-4 z-50">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">
-                                            {getInitials(savedNickname)}
-                                        </div>
-                                        <p className="text-white">Signed in as: {savedNickname}</p>
+        <header className="container mx-auto px-4 h-16 flex items-center justify-end max-w-4xl" >
+            <div className="flex items-center gap-4">
+                {savedNickname && (
+                    <div className="relative" ref={dropdownRef}>
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium hover:bg-blue-600 transition-colors"
+                        >
+                            {getInitials(savedNickname)}
+                        </button>
+                        {isDropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg p-4 z-50">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">
+                                        {getInitials(savedNickname)}
                                     </div>
-                                    {isEditingNickname ? (
-                                        <div className="space-y-2">
-                                            <input
-                                                type="text"
-                                                value={editingNickname}
-                                                onChange={(e) => setEditingNickname(e.target.value)}
-                                                className="w-full p-2 rounded bg-gray-700 text-white text-lg font-bold"
-                                                autoFocus
-                                            />
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={handleUpdateNickname}
-                                                    className="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-bold"
-                                                >
-                                                    Save
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setIsEditingNickname(false);
-                                                        setEditingNickname(savedNickname);
-                                                    }}
-                                                    className="flex-1 bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 font-bold"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => setIsEditingNickname(true)}
-                                            className="w-full bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-600 font-bold"
-                                        >
-                                            Edit Nickname
-                                        </button>
-                                    )}
+                                    <p className="text-white">Kirjautunut: {savedNickname}</p>
                                 </div>
-                            )}
-                        </div>
-                    )}
-                </div>
+                                {isEditingNickname ? (
+                                    <div className="space-y-2">
+                                        <input
+                                            type="text"
+                                            value={editingNickname}
+                                            onChange={(e) => setEditingNickname(e.target.value)}
+                                            className="w-full p-2 rounded bg-gray-700 text-white text-lg font-bold"
+                                            autoFocus
+                                        />
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={handleUpdateNickname}
+                                                className="flex-1 bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 font-bold"
+                                            >
+                                                Tallenna
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setIsEditingNickname(false);
+                                                    setEditingNickname(savedNickname);
+                                                }}
+                                                className="flex-1 bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 font-bold"
+                                            >
+                                                Peruuta
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => setIsEditingNickname(true)}
+                                        className="w-full bg-gray-700 text-white px-3 py-2 rounded hover:bg-gray-600 font-bold"
+                                    >
+                                        Muokkaa nimimerkkiä
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </header>
     );

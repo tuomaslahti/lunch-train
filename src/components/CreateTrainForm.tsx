@@ -32,13 +32,13 @@ export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: Cre
 
     return (
         <form onSubmit={onSubmit} className="mb-8 p-4 rounded bg-gray-800 shadow-lg">
-            <h2 className="text-3xl font-semibold mb-4 text-white text-center">Create New Lunch Train</h2>
+            <h2 className="text-3xl font-semibold mb-4 text-white text-center">Luo uusi lounasjuna</h2>
             <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block mb-1 text-white flex items-center gap-1">
                             <MapPinIcon className="w-4 h-4" />
-                            From
+                            Mistä
                         </label>
                         <input
                             ref={departurePlaceInputRef}
@@ -46,14 +46,13 @@ export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: Cre
                             value={newTrain.departurePlace}
                             onChange={(e) => setNewTrain({ ...newTrain, departurePlace: e.target.value })}
                             className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
-                            placeholder="e.g., Main lobby, Coffee corner, etc."
                             required
                         />
                     </div>
                     <div>
                         <label className="block mb-1 text-white flex items-center gap-1">
                             <MapPinIcon className="w-4 h-4" />
-                            To
+                            Minne
                         </label>
                         <input
                             type="text"
@@ -67,7 +66,7 @@ export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: Cre
                 <div>
                     <label className="block mb-1 text-white flex items-center gap-1">
                         <ClockIcon className="w-4 h-4" />
-                        Departure Time
+                        Lähtöaika
                     </label>
                     <input
                         type="time"
@@ -82,14 +81,13 @@ export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: Cre
                 <div>
                     <label className="block mb-1 text-white flex items-center gap-1">
                         <UserIcon className="w-4 h-4" />
-                        Your Nickname
+                        Nimimerkki
                     </label>
                     <input
                         type="text"
                         value={newTrain.nickname}
                         onChange={(e) => setNewTrain({ ...newTrain, nickname: e.target.value })}
                         className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
-                        placeholder="Enter your nickname"
                         required
                     />
                 </div>
@@ -100,7 +98,7 @@ export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: Cre
                     type="submit"
                     className="bg-green-500 text-white px-12 py-3 rounded hover:bg-green-600 text-lg font-bold"
                 >
-                    Create
+                    Luo
                 </button>
             </div>
         </form>
