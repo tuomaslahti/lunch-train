@@ -1,5 +1,5 @@
-import {CreateLunchTrainInput} from '@/types/lunch-train'
-import CreateTrainForm from './CreateTrainForm'
+import { CreateLunchTrainInput } from '@/types/lunch-train';
+import CreateTrainForm from './CreateTrainForm';
 
 interface HeroSectionProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
@@ -7,7 +7,7 @@ interface HeroSectionProps {
   setNewTrain: (train: CreateLunchTrainInput) => void;
 }
 
-export default function HeroSection({onSubmit, newTrain, setNewTrain}: HeroSectionProps) {
+export default function HeroSection({ onSubmit, newTrain, setNewTrain }: HeroSectionProps) {
   return (
     <div className="relative w-full">
       {/* Hero image container */}
@@ -17,15 +17,12 @@ export default function HeroSection({onSubmit, newTrain, setNewTrain}: HeroSecti
           backgroundImage: 'url("/hero-train.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }}
       />
 
       {/* Semi-transparent overlay */}
-      <div
-        className="absolute inset-0 w-full h-[700px] bg-black opacity-40"
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 w-full h-[700px] bg-black opacity-40" aria-hidden="true" />
 
       {/* Content */}
       <div className="relative h-[700px] container mx-auto flex flex-col items-center justify-center px-4 pt-20">
@@ -35,20 +32,16 @@ export default function HeroSection({onSubmit, newTrain, setNewTrain}: HeroSecti
           </h1>
           <span
             className="absolute -top-1 -right-6 text-sm font-medium text-white bg-green-500 px-2 py-0.5 rounded transform rotate-[20deg]"
-            style={{fontSize: '0.875rem'}}
+            style={{ fontSize: '0.875rem' }}
           >
-                        beta
-                    </span>
+            beta
+          </span>
         </div>
 
         <div className="w-full max-w-4xl pb-8">
-          <CreateTrainForm
-            onSubmit={onSubmit}
-            newTrain={newTrain}
-            setNewTrain={setNewTrain}
-          />
+          <CreateTrainForm onSubmit={onSubmit} newTrain={newTrain} setNewTrain={setNewTrain} />
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}
