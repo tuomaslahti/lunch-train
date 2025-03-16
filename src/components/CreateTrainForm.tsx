@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { CreateLunchTrainInput } from '@/types/lunch-train';
 import { MapPinIcon, ClockIcon, UserIcon } from '@heroicons/react/24/outline';
+import DestinationInput from './DestinationInput';
 
 interface CreateTrainFormProps {
   onSubmit: (e: React.FormEvent) => Promise<void>;
@@ -49,19 +50,10 @@ export default function CreateTrainForm({ onSubmit, newTrain, setNewTrain }: Cre
               required
             />
           </div>
-          <div>
-            <label className="block mb-1 text-white flex items-center gap-1">
-              <MapPinIcon className="w-4 h-4" />
-              Minne
-            </label>
-            <input
-              type="text"
-              value={newTrain.destination}
-              onChange={(e) => setNewTrain({ ...newTrain, destination: e.target.value })}
-              className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
-              required
-            />
-          </div>
+          <DestinationInput
+            value={newTrain.destination}
+            onChange={(value) => setNewTrain({ ...newTrain, destination: value })}
+          />
         </div>
         <div>
           <label className="block mb-1 text-white flex items-center gap-1">

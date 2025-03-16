@@ -119,7 +119,7 @@ export default function TrainCard({
           {train.participants.map((participant) => (
             <div
               key={participant.userId}
-              className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium"
+              className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-sm font-medium"
               title={participant.nickname}
             >
               {getInitials(participant.nickname)}
