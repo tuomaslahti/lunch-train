@@ -1,17 +1,14 @@
+import { useState, useEffect } from 'react';
 import { LunchTrain } from '@/types/lunch-train';
 import { MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { getInitials } from '@/lib/utils';
+import { useUserStore } from '@/state/user';
 
 interface TrainCardProps {
   train: LunchTrain;
   isParticipant: boolean;
-  onJoin: () => void;
+  onJoin: (nickname: string) => void;
   onLeave: () => void;
-  joiningTrainId: string | null;
-  savedNickname: string | null;
-  joinNickname: string;
-  setJoinNickname: (nickname: string) => void;
-  setJoiningTrainId: (id: string | null) => void;
 }
 
 export default function TrainCard({
@@ -19,12 +16,32 @@ export default function TrainCard({
   isParticipant,
   onJoin,
   onLeave,
-  joiningTrainId,
-  savedNickname,
-  joinNickname,
-  setJoinNickname,
-  setJoiningTrainId,
 }: TrainCardProps) {
+  const { nickname } = useUserStore();
+  const [newNickname, setNewNickname] = useState('');
+  const [joiningTrainId, setJoiningTrainId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (nickname) {
+      setNewNickname(nickname);
+    }
+  }, [nickname]);
+
+  const handleJoin = (newNickname?: string) => {
+    if (!nickname && !newNickname && !joiningTrainId) {
+      setJoiningTrainId(train.id);
+      return;
+    }
+
+    if (!nickname && !newNickname?.trim()) {
+      alert('Please enter a nickname');
+      return;
+    }
+
+    onJoin(nickname ?? newNickname!);
+    setJoiningTrainId(null);
+  };
+
   const isDepartingSoon = (departureTime: Date) => {
     const now = new Date();
     const fifteenMinutes = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -33,11 +50,10 @@ export default function TrainCard({
 
   return (
     <div
-      className={`rounded p-4 bg-gray-800 ${
-        isDepartingSoon(new Date(train.departureTime))
-          ? 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-          : 'shadow-lg'
-      }`}
+      className={`rounded p-4 bg-gray-800 ${isDepartingSoon(new Date(train.departureTime))
+        ? 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+        : 'shadow-lg'
+        }`}
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -50,7 +66,7 @@ export default function TrainCard({
               <ClockIcon className="w-5 h-5" />
               {new Date(train.departureTime).toLocaleTimeString('fi-FI', {
                 hour: '2-digit',
-                minute: '2-digit',
+                minute: '2-digit'
               })}
             </span>
           </div>
@@ -63,19 +79,19 @@ export default function TrainCard({
             </button>
           ) : (
             <div>
-              {joiningTrainId === train.id && !savedNickname ? (
+              {joiningTrainId === train.id && !nickname ? (
                 <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                   <input
                     type="text"
-                    value={joinNickname}
-                    onChange={(e) => setJoinNickname(e.target.value)}
+                    value={newNickname}
+                    onChange={(e) => setNewNickname(e.target.value)}
                     className="p-2 rounded bg-gray-700 text-white text-base font-bold"
                     placeholder="Kirjoita nimimerkkisi"
                     required
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={onJoin}
+                      onClick={() => handleJoin(newNickname)}
                       className="flex-1 sm:flex-none bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base font-bold"
                     >
                       Liity
@@ -90,7 +106,7 @@ export default function TrainCard({
                 </div>
               ) : (
                 <button
-                  onClick={onJoin}
+                  onClick={() => handleJoin()}
                   className="w-full sm:w-auto bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 text-base font-bold"
                 >
                   Liity junaan

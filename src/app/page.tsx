@@ -2,35 +2,26 @@
 
 import { useState, useEffect, Fragment } from 'react';
 import { LunchTrain, CreateLunchTrainInput } from '@/types/lunch-train';
-import { getUserInfo, saveNickname } from '@/lib/user-id';
 import Header from '@/components/Header';
-import CreateTrainForm from '@/components/CreateTrainForm';
 import TrainCard from '@/components/TrainCard';
 import { getTrains, createTrain, joinTrain, leaveTrain } from '@/lib/api';
-import { PlusCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import HeroSection from '@/components/HeroSection';
+import { useUserStore } from '@/state/user';
 
 export default function Home() {
   const [trains, setTrains] = useState<LunchTrain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [joiningTrainId, setJoiningTrainId] = useState<string | null>(null);
-  const [joinNickname, setJoinNickname] = useState('');
-  const [userId, setUserId] = useState<string>('');
-  const [savedNickname, setSavedNickname] = useState<string | null>(null);
-  const [isEditingNickname, setIsEditingNickname] = useState(false);
-  const [editingNickname, setEditingNickname] = useState('');
+
+  const { userId, nickname, setNickname, loadUserInfo } = useUserStore();
 
   useEffect(() => {
-    const { userId, nickname } = getUserInfo();
-    setUserId(userId);
-    setSavedNickname(nickname);
+    loadUserInfo();
     if (nickname) {
-      setJoinNickname(nickname);
       setNewTrain((prev) => ({ ...prev, nickname }));
-      setEditingNickname(nickname);
     }
-  }, []);
+  }, [loadUserInfo, nickname]);
 
   const getDefaultTime = () => {
     const date = new Date();
@@ -70,34 +61,78 @@ export default function Home() {
 
   const handleCreateTrain = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!userId) return;
 
     const currentTrain = getCurrentTrain();
     if (currentTrain) {
       const confirmSwitch = window.confirm(
-        `You are already in a train to ${currentTrain.destination}. Do you want to leave it and create a new train?`
+        `Olet jo junassa kohteeseen ${currentTrain.destination}. Haluatko poistua siitä ja luoda uuden junan?`
       );
       if (!confirmSwitch) {
         return;
       }
-      await leaveTrain(currentTrain.id, userId);
+      // Optimistically remove from current train
+      setTrains((prevTrains) => {
+        if (currentTrain.participants.length === 1) {
+          return prevTrains.filter((train) => train.id !== currentTrain.id);
+        }
+        return prevTrains.map((train) =>
+          train.id === currentTrain.id
+            ? { ...train, participants: train.participants.filter((p) => p.userId !== userId) }
+            : train
+        );
+      });
     }
 
+    // Create a temporary ID for optimistic update
+    const tempId = `temp-${Date.now()}`;
+    const newTrainData: LunchTrain = {
+      ...newTrain,
+      id: tempId,
+      participants: [{ userId, nickname: newTrain.nickname }],
+      createdAt: new Date(),
+      createdBy: userId,
+      status: 'active'
+    };
+
+    // Optimistically add new train
+    setTrains((prevTrains) => [...prevTrains, newTrainData]);
+
     try {
+      setIsLoading(true);
+      if (currentTrain) {
+        await leaveTrain(currentTrain.id, userId);
+      }
       await createTrain(newTrain, userId);
-      saveNickname(newTrain.nickname);
-      setSavedNickname(newTrain.nickname);
-      setEditingNickname(newTrain.nickname);
       setNewTrain({
-        destination: '',
         departurePlace: '',
+        destination: '',
         departureTime: getDefaultTime(),
-        nickname: newTrain.nickname,
+        nickname: nickname || '',
       });
-      loadTrains();
+      // Reload trains to get the real ID and ensure we have the latest state
+      await loadTrains();
+      setNickname(newTrain.nickname);
     } catch (error) {
-      console.error('Failed to create train:', error);
-      alert('Failed to create train. Please try again.');
+      console.error('Error creating train:', error);
+      // Revert optimistic updates on error
+      setTrains((prevTrains) => {
+        const updatedTrains = prevTrains.filter((train) => train.id !== tempId);
+        if (currentTrain) {
+          return [
+            ...updatedTrains,
+            {
+              ...currentTrain,
+              participants: [...currentTrain.participants, { userId, nickname: nickname || '' }],
+            },
+          ];
+        }
+        return updatedTrains;
+      });
+      alert('Junan luominen epäonnistui. Yritä uudelleen.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,30 +144,21 @@ export default function Home() {
     );
   };
 
-  const handleJoinTrain = async (trainId: string) => {
-    if (!userId) {
-      setJoiningTrainId(trainId);
-      return;
-    }
+  const handleJoinTrain = async (trainId: string, newNickname: string) => {
+    if (!userId) return;
 
-    // If we have a saved nickname, use it directly
-    const nicknameToUse = savedNickname || joinNickname;
-    if (!nicknameToUse.trim()) {
-      alert('Please enter your nickname');
-      return;
-    }
 
     const currentTrain = getCurrentTrain();
     if (currentTrain) {
       const confirmSwitch = window.confirm(
-        `You are already in a train to ${currentTrain.destination}. Do you want to switch to this train?`
+        `Olet jo junassa kohteeseen ${currentTrain.destination}. Haluatko vaihtaa tähän junaan?`
       );
       if (!confirmSwitch) {
         return;
       }
     }
 
-    // Optimistically update both trains at once
+    // Optimistically update both trains
     setTrains((prevTrains) => {
       const updatedTrains = prevTrains.map((train) => {
         if (train.id === currentTrain?.id) {
@@ -147,7 +173,7 @@ export default function Home() {
           // Add to new train
           return {
             ...train,
-            participants: [...train.participants, { userId, nickname: nicknameToUse }],
+            participants: [...train.participants, { userId, nickname: newNickname }],
           };
         }
         return train;
@@ -157,21 +183,18 @@ export default function Home() {
     });
 
     try {
+      setIsLoading(true);
       // If switching trains, leave the current one first
       if (currentTrain) {
         await leaveTrain(currentTrain.id, userId);
       }
-
-      // Join the new train
-      await joinTrain(trainId, userId, nicknameToUse);
-      saveNickname(nicknameToUse);
-      setSavedNickname(nicknameToUse);
-      setEditingNickname(nicknameToUse);
-      setNewTrain((prev) => ({ ...prev, nickname: nicknameToUse }));
-      setJoiningTrainId(null);
+      await joinTrain(trainId, userId, newNickname);
+      setNickname(newNickname);
+      setNewTrain((prev) => ({ ...prev, nickname: newNickname }));
       // Reload trains to ensure we have the latest state
-      loadTrains();
+      await loadTrains();
     } catch (error) {
+      console.error('Error joining train:', error);
       // Revert both changes on failure
       setTrains((prevTrains) => {
         const updatedTrains = prevTrains.map((train) => {
@@ -179,7 +202,7 @@ export default function Home() {
             // Restore to current train
             return {
               ...train,
-              participants: [...train.participants, { userId, nickname: savedNickname || '' }],
+              participants: [...train.participants, { userId, nickname: nickname || '' }],
             };
           }
           if (train.id === trainId) {
@@ -197,7 +220,9 @@ export default function Home() {
         }
         return updatedTrains;
       });
-      alert('Failed to update train. Please try again.');
+      alert('Junaan liittyminen epäonnistui. Yritä uudelleen.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -224,17 +249,14 @@ export default function Home() {
 
     try {
       await leaveTrain(trainId, userId);
-      // Keep the savedNickname state up to date
-      const { nickname } = getUserInfo();
-      setSavedNickname(nickname);
       // Reload trains to ensure we have the latest state
-      loadTrains();
+      await loadTrains();
     } catch (error: any) {
       // If the error is 404 (train not found), it means the train was deleted
       // In this case, we want to keep the train removed from the state
       if (error?.response?.status === 404) {
         // Reload trains to ensure we have the latest state
-        loadTrains();
+        await loadTrains();
         return;
       }
 
@@ -248,13 +270,13 @@ export default function Home() {
         return prevTrains.map((train) =>
           train.id === trainId
             ? {
-                ...train,
-                participants: [...train.participants, { userId, nickname: savedNickname || '' }],
-              }
+              ...train,
+              participants: [...train.participants, { userId, nickname: nickname || '' }],
+            }
             : train
         );
       });
-      alert('Failed to leave the train. Please try again.');
+      alert('Junasta poistuminen epäonnistui. Yritä uudelleen.');
     }
   };
 
@@ -270,17 +292,8 @@ export default function Home() {
     <main className="mb-32">
       <div className="container mx-auto">
         <Header
-          savedNickname={savedNickname}
-          onNicknameUpdate={(nickname) => {
-            setSavedNickname(nickname);
-            setEditingNickname(nickname);
-            setNewTrain((prev) => ({ ...prev, nickname }));
-            loadTrains();
-          }}
           currentTrain={getCurrentTrain()}
-          userId={userId}
-          editingNickname={editingNickname}
-          setEditingNickname={setEditingNickname}
+          loadTrains={loadTrains}
         />
       </div>
 
@@ -302,13 +315,8 @@ export default function Home() {
                   <TrainCard
                     train={train}
                     isParticipant={isParticipant(train)}
-                    onJoin={() => handleJoinTrain(train.id)}
+                    onJoin={(newNickname: string) => handleJoinTrain(train.id, newNickname)}
                     onLeave={() => handleLeaveTrain(train.id)}
-                    joiningTrainId={joiningTrainId}
-                    savedNickname={savedNickname}
-                    joinNickname={joinNickname}
-                    setJoinNickname={setJoinNickname}
-                    setJoiningTrainId={setJoiningTrainId}
                   />
                 </Fragment>
               ))
