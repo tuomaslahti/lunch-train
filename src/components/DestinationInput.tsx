@@ -19,19 +19,8 @@ interface DestinationInputProps {
 
 export default function DestinationInput({ value, onChange }: DestinationInputProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [destinationValue, setDestinationValue] = useState(value);
-
-    useEffect(() => {
-        setDestinationValue(value);
-    }, [value]);
-
-    useEffect(() => {
-        setIsDropdownOpen(isFocused && destinationValue.length === 0);
-        onChange(destinationValue);
-    }, [destinationValue]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -45,12 +34,22 @@ export default function DestinationInput({ value, onChange }: DestinationInputPr
     }, []);
 
     const handleInputFocus = () => {
-        setIsFocused(true);
-        setIsDropdownOpen(true);
+        if (value.length === 0) {
+            setIsDropdownOpen(true);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(e.target.value);
+        if (e.target.value.length === 0) {
+            setIsDropdownOpen(true);
+        } else {
+            setIsDropdownOpen(false);
+        }
     };
 
     const handleDestinationSelect = (destination: string) => {
-        setDestinationValue(destination);
+        onChange(destination);
         setIsDropdownOpen(false);
         inputRef.current?.blur();
     };
@@ -65,15 +64,14 @@ export default function DestinationInput({ value, onChange }: DestinationInputPr
                 <input
                     ref={inputRef}
                     type="text"
-                    value={destinationValue}
-                    onChange={(e) => setDestinationValue(e.target.value)}
+                    value={value}
+                    onChange={handleInputChange}
                     onFocus={handleInputFocus}
-                    onBlur={() => setIsFocused(false)}
                     className="w-full p-3 rounded bg-gray-700 text-white text-lg font-bold"
                     required
                 />
                 {isDropdownOpen && (
-                    <div className="absolute left-0 right-0 mt-1 bg-gray-700 rounded-lg shadow-lg overflow-hidden z-50 mt-2">
+                    <div className="absolute left-0 right-0 mt-2 bg-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
                         {COMMON_DESTINATIONS.map((destination) => (
                             <button
                                 key={destination}
