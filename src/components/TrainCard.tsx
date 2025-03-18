@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LunchTrain } from '@/types/lunch-train';
-import { MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ClockIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { getInitials } from '@/lib/utils';
 import { useUserStore } from '@/state/user';
 
@@ -20,6 +20,7 @@ export default function TrainCard({
   const { nickname } = useUserStore();
   const [newNickname, setNewNickname] = useState('');
   const [joiningTrainId, setJoiningTrainId] = useState<string | null>(null);
+  const [isParticipantsExpanded, setIsParticipantsExpanded] = useState(false);
 
   useEffect(() => {
     if (nickname) {
@@ -42,18 +43,9 @@ export default function TrainCard({
     setJoiningTrainId(null);
   };
 
-  const isDepartingSoon = (departureTime: Date) => {
-    const now = new Date();
-    const fifteenMinutes = 15 * 60 * 1000; // 15 minutes in milliseconds
-    return new Date(departureTime).getTime() - now.getTime() <= fifteenMinutes;
-  };
-
   return (
     <div
-      className={`rounded p-4 bg-gray-800 ${isDepartingSoon(new Date(train.departureTime))
-        ? 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-        : 'shadow-lg'
-        }`}
+      className={`rounded p-4 bg-gray-800 shadow-lg`}
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -115,16 +107,49 @@ export default function TrainCard({
             </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {train.participants.map((participant) => (
-            <div
-              key={participant.userId}
-              className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-sm font-medium"
-              title={participant.nickname}
-            >
-              {getInitials(participant.nickname)}
+        <div>
+          <button
+            onClick={() => setIsParticipantsExpanded(!isParticipantsExpanded)}
+            className="w-full flex items-center justify-between rounded transition-colors"
+          >
+            <div className="flex flex-wrap gap-2">
+              {train.participants.map((participant) => (
+                <div
+                  key={participant.userId}
+                  className="flex items-center gap-2"
+                >
+                  <div
+                    className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-sm font-medium flex-shrink-0"
+                    title={participant.nickname}
+                  >
+                    {getInitials(participant.nickname)}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+            {isParticipantsExpanded ? (
+              <ChevronUpIcon className="w-5 h-5 text-gray-300" />
+            ) : (
+              <ChevronDownIcon className="w-5 h-5 text-gray-300" />
+            )}
+          </button>
+          {isParticipantsExpanded && (
+            <div className="mt-4 space-y-2">
+              {train.participants.map((participant) => (
+                <div
+                  key={participant.userId}
+                  className="flex items-center gap-2 text-white font-medium"
+                >
+                  <div
+                    className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center text-sm font-medium flex-shrink-0"
+                  >
+                    {getInitials(participant.nickname)}
+                  </div>
+                  {participant.nickname}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
