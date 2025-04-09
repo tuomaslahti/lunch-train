@@ -284,9 +284,20 @@ export default function Home() {
     return train.participants.some((p) => p.userId === userId);
   };
 
-  const activeTrains = trains
-    .filter((train) => new Date(train.departureTime) > new Date())
+  // Separate trains into upcoming and recently departed
+  const now = new Date();
+  const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+
+  const upcomingTrains = trains
+    .filter(train => new Date(train.departureTime) > now)
     .sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime());
+
+  const recentlyDepartedTrains = trains
+    .filter(train => {
+      const departureTime = new Date(train.departureTime);
+      return departureTime <= now && departureTime >= tenMinutesAgo;
+    })
+    .sort((a, b) => new Date(b.departureTime).getTime() - new Date(a.departureTime).getTime());
 
   return (
     <main className="mb-32">
@@ -298,32 +309,56 @@ export default function Home() {
       </div>
 
       <HeroSection onSubmit={handleCreateTrain} newTrain={newTrain} setNewTrain={setNewTrain} />
-
-      <div className="container mx-auto px-4 mt-8 flex flex-col items-center justify-center">
-        <div className="w-full max-w-4xl pb-8">
-          <h2 className="text-2xl font-semibold mb-4">Seuraavat lähdöt</h2>
-          <div className="grid gap-4">
-            {isLoading && isInitialLoad ? (
-              <div className="flex justify-center py-8">
-                <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin" />
-              </div>
-            ) : activeTrains.length === 0 ? (
-              <div className="text-gray-400 text-center py-8">Ei tulevia lähtöjä</div>
-            ) : (
-              activeTrains.map((train) => (
-                <Fragment key={train.id}>
-                  <TrainCard
-                    train={train}
-                    isParticipant={isParticipant(train)}
-                    onJoin={(newNickname: string) => handleJoinTrain(train.id, newNickname)}
-                    onLeave={() => handleLeaveTrain(train.id)}
-                  />
-                </Fragment>
-              ))
-            )}
-          </div>
+      {isLoading && isInitialLoad ? (
+        <div className="flex justify-center py-8">
+          <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin" />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="container mx-auto px-4 mt-8 flex flex-col items-center justify-center">
+            <div className="w-full max-w-4xl pb-8">
+              <h2 className="text-2xl font-semibold mb-4">Seuraavat lähdöt</h2>
+              <div className="grid gap-4">
+                {upcomingTrains.length === 0 ? (
+                  <div className="text-gray-400 text-center py-8">Ei tulevia lähtöjä</div>
+                ) : (
+                  upcomingTrains.map((train) => (
+                    <Fragment key={train.id}>
+                      <TrainCard
+                        train={train}
+                        isParticipant={isParticipant(train)}
+                        onJoin={(newNickname: string) => handleJoinTrain(train.id, newNickname)}
+                        onLeave={() => handleLeaveTrain(train.id)}
+                      />
+                    </Fragment>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          {recentlyDepartedTrains.length > 0 && (
+            <div className="container mx-auto px-4 mt-8 flex flex-col items-center justify-center">
+              <div className="w-full max-w-4xl pb-8">
+                <h2 className="text-2xl font-semibold mb-4">Näihin vielä ehtii</h2>
+                <div className="grid gap-4">
+                  {recentlyDepartedTrains.map((train) => (
+                    <Fragment key={train.id}>
+                      <TrainCard
+                        train={train}
+                        isParticipant={isParticipant(train)}
+                        onJoin={(newNickname: string) => handleJoinTrain(train.id, newNickname)}
+                        onLeave={() => handleLeaveTrain(train.id)}
+                      />
+                    </Fragment>
+                  ))
+                  }
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 }

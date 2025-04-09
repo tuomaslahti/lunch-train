@@ -52,13 +52,13 @@ export const createLunchTrain = async (
 
 export const getActiveLunchTrains = async (): Promise<LunchTrain[]> => {
   const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
 
   const q = query(
     collection(db, COLLECTION_NAME),
     where('status', '==', 'active'),
-    where('departureTime', '>=', Timestamp.fromDate(startOfDay)),
+    where('departureTime', '>=', Timestamp.fromDate(tenMinutesAgo)),
     where('departureTime', '<', Timestamp.fromDate(endOfDay)),
     orderBy('departureTime', 'asc')
   );
